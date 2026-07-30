@@ -1,0 +1,19 @@
+{
+  "name": "marketplace-api",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "QuasarDev",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.22.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8"
+  }
+}
