@@ -1,8 +1,8 @@
-import User from './user.model.js';
-import Product from './products.model.js';
-import Order from './order.model.js';
-import OrderItem from './order-item.model.js';
-import Review from './review.model.js';
+import User from '../modules/users/user.model.js';
+import Product from '../modules/products/products.model.js';
+import Order from '../modules/orders/order.model.js';
+import OrderItem from '../modules/order-items/order-item.model.js';
+import Review from '../modules/reviews/review.model.js';
 
 
 User.hasMany(Product, { foreignKey: 'sellerId' });

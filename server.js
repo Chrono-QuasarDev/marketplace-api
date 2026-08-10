@@ -1,5 +1,5 @@
-import sequelize from './config/db.js';
-import './models/associations.js';
+import sequelize from './src/config/db.js';
+import './src/database/associations.js';
 
 async function testConnection() {
   try {
