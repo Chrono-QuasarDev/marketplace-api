@@ -7,8 +7,11 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --detectOpenHandles --forceExit",
     "start": "node --watch server.js"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -22,6 +25,9 @@
     "sequelize": "^6.37.8"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.6.5"
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "sequelize-cli": "^6.6.5",
+    "supertest": "^7.2.2"
   }
 }
