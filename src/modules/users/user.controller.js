@@ -1,8 +1,9 @@
 import User from './user.model.js';
 import { ApiError } from '../../shared/errors/ApiError.js';
 import { toSafeUser } from '../../shared/utils/format-response.js';
+import { updateUserProfile } from './user.service.js';
 
-export const profile = async (req, res, next) => {
+const profile = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id);
     if (!user) {
@@ -13,3 +14,20 @@ export const profile = async (req, res, next) => {
     next(error);
   }
 };
+
+const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { username } = req.body;
+    if (!username) {
+      throw new ApiError(400, 'Username is required');
+    }
+
+    const user = await updateUserProfile(userId, { username });
+    res.json({ user });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { profile, updateProfile };
