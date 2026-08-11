@@ -5,7 +5,7 @@ configDotenv();
 const EXPIRES_IN = process.env.EXPIRES_IN;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export function createAccessToken(user) {
+export const createAccessToken = (user) => {
   const payload = {
     id: user.id,
     email: user.email,

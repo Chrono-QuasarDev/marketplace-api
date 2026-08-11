@@ -1,4 +1,4 @@
-export function toSafeUser(user) {
+export const toSafeUser = (user) => {
   const { password, ...safeUser } = user.toJSON();
   return safeUser;
-}
+};

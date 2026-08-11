@@ -6,7 +6,7 @@ import { createAccessToken } from '../../shared/utils/generate-token.js';
 
 const SALT_ROUNDS = 10;
 
-export async function registerUser({ username, email, password }) {
+export const registerUser = async ({ username, email, password }) => {
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new ApiError(409, 'User already exists');
@@ -20,7 +20,7 @@ export async function registerUser({ username, email, password }) {
   return { user: safeUser };
 }
 
-export async function loginUser({ email, password }) {
+export const loginUser = async ({ email, password }) => {
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new ApiError(401, 'Invalid credentials');

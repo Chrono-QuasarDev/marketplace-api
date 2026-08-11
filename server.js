@@ -2,7 +2,7 @@ import sequelize from './src/config/db.js';
 import './src/database/associations.js';
 import app from './src/app.js'
 
-async function testConnection() {
+const testConnection = async () => {
   try {
     await sequelize.authenticate();
     app.listen(3000, () => { console.log('Server is running on port 3000'); });

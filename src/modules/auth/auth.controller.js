@@ -1,7 +1,7 @@
 import { ApiError } from '../../shared/errors/ApiError.js';
 import { registerUser, loginUser } from '../auth/auth.service.js';
 
-export async function register(req, res, next) {
+export const register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
@@ -15,7 +15,7 @@ export async function register(req, res, next) {
   }
 }
 
-export async function login(req, res, next) {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
