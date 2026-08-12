@@ -1,15 +1,36 @@
 import request from 'supertest';
 import bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
 import app from '../../../app.js';
 import sequelize from '../../../config/db.js';
 import User from '../../users/user.model.js';
+import Product from '../products.model.js';
 import { createAccessToken } from '../../../shared/utils/generate-token.js';
 
 let sellerToken;
 let buyerToken;
 
+const testUsernames = ['selleruser', 'buyeruser'];
+const testEmails = ['seller@example.com', 'buyer@example.com'];
+const testProductTitles = ['Gaming Laptop', 'Second Product'];
+
 beforeAll(async () => {
-  await sequelize.sync({ force: true });
+  await sequelize.sync();
+
+  await Product.destroy({
+    where: {
+      title: { [Op.in]: testProductTitles }
+    }
+  });
+
+  await User.destroy({
+    where: {
+      [Op.or]: [
+        { username: { [Op.in]: testUsernames } },
+        { email: { [Op.in]: testEmails } }
+      ]
+    }
+  });
 
   const sellerPassword = await bcrypt.hash('password123', 10);
   const buyerPassword = await bcrypt.hash('password123', 10);
@@ -33,6 +54,21 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await Product.destroy({
+    where: {
+      title: { [Op.in]: testProductTitles }
+    }
+  });
+
+  await User.destroy({
+    where: {
+      [Op.or]: [
+        { username: { [Op.in]: testUsernames } },
+        { email: { [Op.in]: testEmails } }
+      ]
+    }
+  });
+
   await sequelize.close();
 });
 

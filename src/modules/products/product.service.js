@@ -24,4 +24,14 @@ const createProductInDb = async (productData) => {
   return product;
 };
 
-export { createProductInDb };
+const getProductsFromDb = async (params) => {
+  const { limit, offset, sortBy, orderBy } = params;
+  const { count, rows } = await Products.findAndCountAll({
+    limit,
+    offset,
+    order: [[sortBy, orderBy]]
+  });
+  return { count, rows };
+};
+
+export { createProductInDb, getProductsFromDb };
