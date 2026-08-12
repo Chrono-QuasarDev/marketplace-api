@@ -47,4 +47,41 @@ const getProductByIdFromDb = async (id) => {
   return product;
 };
 
-export { createProductInDb, getProductsFromDb, getProductByIdFromDb };
+const updateProductByIdFromDb = async (id, sellerId, productData) => {
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!UUID_REGEX.test(id)) {
+    throw new ApiError(400, 'Invalid product id');
+  }
+
+  const product = await Products.findByPk(id);
+  if (!product) {
+    throw new ApiError(404, 'Product not found');
+  }
+
+  if (product.sellerId !== sellerId) {
+    throw new ApiError(403, 'You are not the owner of this product');
+  }
+
+  await product.update(productData);
+  return product;
+};
+
+const deleteProductByIdFromDb = async (id, sellerId) => {
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!UUID_REGEX.test(id)) {
+    throw new ApiError(400, 'Invalid product id');
+  }
+
+  const product = await Products.findByPk(id);
+  if (!product) {
+    throw new ApiError(404, 'Product not found');
+  }
+
+  if (product.sellerId !== sellerId) {
+    throw new ApiError(403, 'You are not the owner of this product');
+  }
+
+  await product.destroy();
+};
+
+export { createProductInDb, getProductsFromDb, getProductByIdFromDb, updateProductByIdFromDb, deleteProductByIdFromDb };
