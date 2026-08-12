@@ -9,10 +9,11 @@ import { createAccessToken } from '../../../shared/utils/generate-token.js';
 
 let sellerToken;
 let buyerToken;
+let detailProductId;
 
 const testUsernames = ['selleruser', 'buyeruser'];
 const testEmails = ['seller@example.com', 'buyer@example.com'];
-const testProductTitles = ['Gaming Laptop', 'Second Product'];
+const testProductTitles = ['Gaming Laptop', 'Second Product', 'Product Detail Test'];
 
 beforeAll(async () => {
   await sequelize.sync();
@@ -221,5 +222,33 @@ describe('POST /api/products', () => {
 
     expect(res.statusCode).toBe(201);
     expect(res.body.title).toBe(payload.title);
+  });
+
+  it('should fetch a product by id', async () => {
+    const payload = {
+      title: 'Product Detail Test',
+      description: 'A product created specifically for detail lookup.',
+      price: 149.99,
+      category: 'testing',
+      images: ['detail-1.jpg'],
+      availability: true,
+    };
+
+    const createRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', `Bearer ${sellerToken}`)
+      .send(payload);
+
+    expect(createRes.statusCode).toBe(201);
+    detailProductId = createRes.body.id;
+
+    const res = await request(app)
+      .get(`/api/products/${detailProductId}`)
+      .set('Authorization', `Bearer ${buyerToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(detailProductId);
+    expect(res.body.title).toBe(payload.title);
+    expect(res.body.description).toBe(payload.description);
   });
 });
