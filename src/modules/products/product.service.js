@@ -1,26 +1,15 @@
 import Products from './products.model.js';
 import { ApiError } from '../../shared/errors/ApiError.js';
+import { sanitizeProductPayload } from '../../shared/validators/product.validator.js';
 
 const createProductInDb = async (productData) => {
-  const required = ['title', 'description', 'price', 'category', 'images', 'availability'];
-  const missing = required.filter(field => productData[field] === undefined || productData[field] === null);
-  if (missing.length) {
-    throw new ApiError(400, `Missing required fields: ${missing.join(', ')}`);
-  }
+  const safeData = sanitizeProductPayload(productData, { requireAllFields: true });
 
-  if (!Array.isArray(productData.images) || productData.images.length === 0) {
-    throw new ApiError(400, 'Images must be a non-empty array');
-  }
+  const product = await Products.create({
+    ...safeData,
+    sellerId: productData.sellerId,
+  });
 
-  if (typeof productData.price !== 'number' || productData.price <= 0) {
-    throw new ApiError(400, 'Price must be a positive number');
-  }
-
-  if (typeof productData.availability !== 'boolean') {
-    throw new ApiError(400, 'Availability must be a boolean value');
-  }
-
-  const product = await Products.create(productData);
   return product;
 };
 
@@ -47,4 +36,46 @@ const getProductByIdFromDb = async (id) => {
   return product;
 };
 
-export { createProductInDb, getProductsFromDb, getProductByIdFromDb };
+const updateProductByIdFromDb = async (id, sellerId, productData) => {
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!UUID_REGEX.test(id)) {
+    throw new ApiError(400, 'Invalid product id');
+  }
+
+  const product = await Products.findByPk(id);
+  if (!product) {
+    throw new ApiError(404, 'Product not found');
+  }
+
+  if (product.sellerId !== sellerId) {
+    throw new ApiError(403, 'You are not the owner of this product');
+  }
+
+  const safeData = sanitizeProductPayload(productData);
+  if (Object.keys(safeData).length === 0) {
+    return product;
+  }
+
+  await product.update(safeData);
+  return product;
+};
+
+const deleteProductByIdFromDb = async (id, sellerId) => {
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!UUID_REGEX.test(id)) {
+    throw new ApiError(400, 'Invalid product id');
+  }
+
+  const product = await Products.findByPk(id);
+  if (!product) {
+    throw new ApiError(404, 'Product not found');
+  }
+
+  if (product.sellerId !== sellerId) {
+    throw new ApiError(403, 'You are not the owner of this product');
+  }
+
+  await product.destroy();
+};
+
+export { createProductInDb, getProductsFromDb, getProductByIdFromDb, updateProductByIdFromDb, deleteProductByIdFromDb };

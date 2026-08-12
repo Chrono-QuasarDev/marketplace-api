@@ -1,4 +1,4 @@
-import { createProductInDb, getProductsFromDb, getProductByIdFromDb } from './product.service.js';
+import { createProductInDb, getProductsFromDb, getProductByIdFromDb, updateProductByIdFromDb, deleteProductByIdFromDb } from './product.service.js';
 
 const ALLOWED_SORT_FIELDS = ['createdAt', 'price', 'title'];
 const ALLOWED_ORDER = ['asc', 'desc'];
@@ -22,7 +22,7 @@ const getProducts = async (req, res, next) => {
     const orderBy = ALLOWED_ORDER.includes(req.query.orderBy) ? req.query.orderBy : 'desc';
 
     // Calculate limit and offset
-    const limit = size;
+    let limit = size;
     if (limit >= 100) limit = 100;
     const offset = (page - 1) * limit;
 
@@ -51,4 +51,27 @@ const getProductById = async (req, res, next) => {
   }
 };
 
-export { createProduct, getProducts, getProductById }
+const updateProductById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.user.id;
+    const { title, description, price, category, images, availability } = req.body;
+    const product = await updateProductByIdFromDb(id, sellerId, { title, description, price, category, images, availability });
+    res.status(200).json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteProductById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.user.id;
+    await deleteProductByIdFromDb(id, sellerId);
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { createProduct, getProducts, getProductById, updateProductById, deleteProductById }
