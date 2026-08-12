@@ -18,6 +18,6 @@ export const authenticate = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    next(error);
+    next(new ApiError(401, 'Invalid token.'));
   }
 };

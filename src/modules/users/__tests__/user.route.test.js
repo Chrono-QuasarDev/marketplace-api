@@ -1,5 +1,6 @@
 import request from 'supertest';
 import bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
 import app from '../../../app.js';
 import sequelize from '../../../config/db.js';
 import User from '../user.model.js';
@@ -8,8 +9,20 @@ import { createAccessToken } from '../../../shared/utils/generate-token.js';
 let token;
 let user;
 
+const testUsernames = ['originaluser', 'updateduser', 'takenname'];
+const testEmails = ['test@example.com', 'other@example.com'];
+
 beforeAll(async () => {
-  await sequelize.sync({ force: true });
+  await sequelize.sync();
+
+  await User.destroy({
+    where: {
+      [Op.or]: [
+        { username: { [Op.in]: testUsernames } },
+        { email: { [Op.in]: testEmails } }
+      ]
+    }
+  });
 
   const hashedPassword = await bcrypt.hash("password123", 10);
 
@@ -24,6 +37,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await User.destroy({
+    where: {
+      [Op.or]: [
+        { username: { [Op.in]: testUsernames } },
+        { email: { [Op.in]: testEmails } }
+      ]
+    }
+  });
+
   await sequelize.close();
 });
 
@@ -55,6 +77,16 @@ describe('PUT /api/users/profile', () => {
       .send({ username: "noauthuser" });
 
     expect(res.statusCode).toBe(401);
+  });
+
+  it('should return 401 for an invalid token', async () => {
+    const res = await request(app)
+      .put('/api/users/profile')
+      .set('Authorization', 'Bearer malformed.token.value')
+      .send({ username: 'hacker' });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toMatch(/invalid token/i);
   });
 
   it("should return 409 if username is already taken", async () => {
