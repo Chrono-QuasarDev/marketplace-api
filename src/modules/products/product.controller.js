@@ -1,5 +1,8 @@
 import { createProductInDb, getProductsFromDb } from './product.service.js';
 
+const ALLOWED_SORT_FIELDS = ['createdAt', 'price', 'title'];
+const ALLOWED_ORDER = ['asc', 'desc'];
+
 const createProduct = async (req, res, next) => {
   try {
     const sellerId = req.user.id;
@@ -15,11 +18,12 @@ const getProducts = async (req, res, next) => {
   try {
     const page = Number(req.query.page) || 1;
     const size = Number(req.query.size) || 10;
-    const sortBy = req.query.sortBy || 'createdAt';
-    const orderBy = req.query.orderBy || 'desc';
+    const sortBy = ALLOWED_SORT_FIELDS.includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
+    const orderBy = ALLOWED_ORDER.includes(req.query.orderBy) ? req.query.orderBy : 'desc';
 
     // Calculate limit and offset
     const limit = size;
+    if (limit >= 100) limit = 100;
     const offset = (page - 1) * limit;
 
     const { count, rows } = await getProductsFromDb({ limit, offset, sortBy, orderBy });

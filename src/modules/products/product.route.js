@@ -5,9 +5,8 @@ import { createProduct, getProducts } from './product.controller.js';
 
 const router = Router();
 router.use(authenticate);
-router.use(authorization(['seller']));
 
-router.post('/products', createProduct);
-router.get('/products', getProducts);
+router.post('/products', authorization(['seller']), createProduct);
+router.get('/products', authorization(['buyer', 'seller', 'admin']), getProducts);
 
 export default router;
