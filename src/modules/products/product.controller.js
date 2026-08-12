@@ -1,4 +1,4 @@
-import { createProductInDb, getProductsFromDb } from './product.service.js';
+import { createProductInDb, getProductsFromDb, getProductByIdFromDb } from './product.service.js';
 
 const ALLOWED_SORT_FIELDS = ['createdAt', 'price', 'title'];
 const ALLOWED_ORDER = ['asc', 'desc'];
@@ -41,4 +41,14 @@ const getProducts = async (req, res, next) => {
   }
 };
 
-export { createProduct, getProducts }
+const getProductById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await getProductByIdFromDb(id);
+    res.status(200).json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { createProduct, getProducts, getProductById }
