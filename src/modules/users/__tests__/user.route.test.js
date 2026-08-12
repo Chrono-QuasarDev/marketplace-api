@@ -79,6 +79,16 @@ describe('PUT /api/users/profile', () => {
     expect(res.statusCode).toBe(401);
   });
 
+  it('should return 401 for an invalid token', async () => {
+    const res = await request(app)
+      .put('/api/users/profile')
+      .set('Authorization', 'Bearer malformed.token.value')
+      .send({ username: 'hacker' });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toMatch(/invalid token/i);
+  });
+
   it("should return 409 if username is already taken", async () => {
     await User.create({
       username: "takenname",
