@@ -7,7 +7,15 @@ const Order = sequelize.define('Order', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
-  totalPrice: {
+  buyerId: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  productId: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  priceAtPurchase: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },

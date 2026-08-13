@@ -3,20 +3,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable('Orders', {
+    await queryInterface.dropTable('OrderItems');
+  },
+
+  async down (queryInterface, Sequelize) {
+    await queryInterface.createTable('OrderItems', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true
       },
-      buyerId: {
+      orderId: {
         type: Sequelize.UUID,
         references: {
-          model: 'Users',
+          model: 'Orders',
           key: 'id'
         },
         allowNull: false,
-        onDelete: 'RESTRICT'
+        onDelete: 'CASCADE'
       },
       productId: {
         type: Sequelize.UUID,
@@ -27,14 +31,10 @@ module.exports = {
         allowNull: false,
         onDelete: 'RESTRICT'
       },
-      priceAtPurchase: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      status: {
-        type: Sequelize.ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled'),
-        defaultValue: 'pending',
-        allowNull: false
+      quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -47,9 +47,5 @@ module.exports = {
         defaultValue: Sequelize.NOW
       }
     });
-  },
-
-  async down (queryInterface, Sequelize) {
-    await queryInterface.dropTable('Orders');
   }
 };
