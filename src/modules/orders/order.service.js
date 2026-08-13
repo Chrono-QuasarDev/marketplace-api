@@ -46,3 +46,27 @@ export const purchaseProduct = async (productId, buyerId) => {
   
   return result;
 };
+
+export const getOrdersService = async (buyerId) => {
+  if (!validateId(buyerId)) {
+    throw new ApiError(400, 'Invalid buyer id');
+  }
+
+  const orders = await Order.findAll({ where: { buyerId } });
+  if (!orders) {
+    throw new ApiError(404, 'No orders found for this buyer');
+  }
+  return orders;
+};
+
+export const getOrderByIdService = async (id) => {
+  if (!validateId(id)) {
+    throw new ApiError(400, 'Invalid order id');
+  }
+  
+  const order = await Order.findByPk(id);
+  if (!order) {
+    throw new ApiError(404, 'Order not found');
+  }
+  return order;
+}
