@@ -9,36 +9,40 @@ export const purchaseProduct = async (productId, buyerId) => {
   if (!validateId(productId)) {
     throw new ApiError(400, 'Invalid product id');
   }
-
-  // Confirm product exists
-  const product = await Product.findByPk(productId);
-  if (!product) {
-    throw new ApiError(404, 'Product not found');
-  }
-
   // Begin transaction
-  const transaction = await sequelize.transaction();
-  try {
-    const [affectedRows] = await Product.update(
-      { availability: false },
-      { where: { id: productId, availability: true }, transaction }
-    );
+  const result = await sequelize.transaction(async (transaction) => {
+    const product = await Product.findByPk(productId, {
+      transaction, lock: transaction.LOCK.UPDATE
+    });
+    if (!product) {
+      throw new ApiError(404, 'Product not found');
+    }
 
-    if (affectedRows === 0) {
+    if (!product.availability) {
       throw new ApiError(409, 'Product not available for purchase');
     }
 
+    if (product.sellerId === buyerId) {
+      throw new ApiError(400, 'Buyer cannot purchase their own product');
+    }
+
+    let priceAtPurchase = product.price;
+
+    product.availability = false;
+    await product.save({ transaction });
+
     // Create order (single-product order stores productId and priceAtPurchase)
     const order = await Order.create(
-      { buyerId, productId, priceAtPurchase: product.price, status: 'completed' },
+      { 
+        buyerId, 
+        productId: product.id, 
+        priceAtPurchase, 
+        status: 'pending' },
       { transaction }
     );
 
-    await transaction.commit();
-
     return { order };
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
+  });
+  
+  return result;
 };
