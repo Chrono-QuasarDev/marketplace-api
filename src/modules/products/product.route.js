@@ -6,10 +6,10 @@ import { createProduct, getProducts, getProductById, updateProductById, deletePr
 const router = Router();
 router.use(authenticate);
 
-router.post('/products', authorization(['seller']), createProduct);
-router.get('/products', authorization(['buyer', 'seller', 'admin']), getProducts);
-router.get('/products/:id', getProductById);
-router.put('/products/:id', authorization(['seller']), updateProductById);
-router.delete('/products/:id', authorization(['seller']), deleteProductById);
+router.post('/', authorization(['seller']), createProduct);
+router.get('/', authorization(['buyer', 'seller', 'admin']), getProducts);
+router.get('/:id', getProductById);
+router.put('/:id', authorization(['seller']), updateProductById);
+router.delete('/:id', authorization(['seller']), deleteProductById);
 
 export default router;

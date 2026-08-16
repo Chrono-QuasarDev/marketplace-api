@@ -30,10 +30,7 @@ module.exports = {
       rating: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        validate: {
-          min: 1,
-          max: 5
-        }
+        
       },
       comment: {
         type: Sequelize.TEXT,
@@ -50,6 +47,8 @@ module.exports = {
         defaultValue: Sequelize.NOW
       }
     });
+    // enforce rating between 1 and 5 at the DB level
+    await queryInterface.sequelize.query(`ALTER TABLE "Reviews" ADD CONSTRAINT "reviews_rating_check" CHECK (rating >= 1 AND rating <= 5);`);
   },
 
   async down (queryInterface, Sequelize) {

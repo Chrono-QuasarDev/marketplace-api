@@ -9,7 +9,6 @@ const Product = sequelize.define('Product', {
   },
   sellerId: {
     type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
     allowNull: false,
     references: {
       model: 'Users',
