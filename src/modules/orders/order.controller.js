@@ -1,4 +1,4 @@
-import { purchaseProduct, getOrderByIdService, getOrdersService } from "./order.service.js";
+import { purchaseProduct, getOrderByIdService, getOrderHistory, updateOrderStatus } from "./order.service.js";
 
 export const purchase = async (req, res, next) => {
   try {
@@ -16,7 +16,8 @@ export const purchase = async (req, res, next) => {
 export const getOrders = async (req, res, next) => {
   try {
     const { id } = req.user;
-    const orders = await getOrdersService(id);
+
+    const orders = await getOrderHistory(id);
     res.status(200).json({ orders });
   } catch (error) {
     next(error);
@@ -26,7 +27,22 @@ export const getOrders = async (req, res, next) => {
 export const getOrderById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const order = await getOrderByIdService(id);
+    const { id: userId, role: userRole } = req.user;
+
+    const order = await getOrderByIdService(id, userId, userRole);
+    res.status(200).json({ order });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const patchOrderStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const { id: userId, role: userRole } = req.user;
+
+    const order = await updateOrderStatus(id, status, userId, userRole);
     res.status(200).json({ order });
   } catch (error) {
     next(error);
