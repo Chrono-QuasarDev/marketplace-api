@@ -1,4 +1,5 @@
 import express from "express";
+import './database/associations.js';
 import authRoutes from './modules/auth/auth.route.js';
 import userRoutes from './modules/users/user.route.js';
 import orderRoutes from './modules/orders/order.route.js';
