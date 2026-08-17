@@ -58,13 +58,14 @@ export const updateReview = async ({ userId, reviewId, rating, comment }) => {
     throw new ApiError(403, "You can only edit your own reviews");
   }
 
-  // Validate rating
-  if (rating < 1 || rating > 5) {
-    throw new ApiError(400, "Invalid rating. Please provide a rating between 1 and 5.");
+  if (rating !== undefined) {
+    if (rating < 1 || rating > 5) {
+      throw new ApiError(400, "Invalid rating. Please provide a rating between 1 and 5.");
+    }
+    review.rating = rating;
   }
-  review.rating = rating;
 
-  if (comment) {
+  if (comment !== undefined) {
     review.comment = comment;
   }
 
@@ -112,5 +113,5 @@ export const getProductReviews = async ({ productId }) => {
     include: [{ model: User, attributes: ['id', 'username'] }],
     order: [['createdAt', 'DESC']]
   });
-  return reviews;
+    return reviews;
 };
