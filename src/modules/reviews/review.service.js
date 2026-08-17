@@ -38,3 +38,37 @@ export const createReview = async ({ userId, productId, rating, comment }) => {
   const review = await Review.create({ userId, productId, rating, comment });
   return review;
 };
+
+export const updateReview = async ({ userId, reviewId, rating, comment }) => {
+  // Validate IDs
+  if (!validateId(reviewId)) {
+    throw new ApiError(400, "Invalid review ID");
+  }
+
+  // Get review from db
+  const review = await Review.findByPk(reviewId);
+
+  // Check if review exists
+  if (!review) {
+    throw new ApiError(404, "Review not found");
+  }
+
+  // Check if user is the owner of the review
+  if (review.userId !== userId) {
+    throw new ApiError(403, "You can only edit your own reviews");
+  }
+
+  // Validate rating
+  if (rating < 1 || rating > 5) {
+    throw new ApiError(400, "Invalid rating. Please provide a rating between 1 and 5.");
+  }
+  review.rating = rating;
+
+  if (comment) {
+    review.comment = comment;
+  }
+
+  // Save the updated review
+  await review.save();
+  return review;
+}

@@ -1,4 +1,4 @@
-import { createReview } from './review.service.js';
+import { createReview, updateReview } from './review.service.js';
 
 export const addReview = async (req, res, next) => {
   try {
@@ -11,3 +11,16 @@ export const addReview = async (req, res, next) => {
     next(error);
   }
 };
+
+export const editReview = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+
+    const review = await updateReview({ userId, reviewId: id, rating, comment });
+    res.status(200).json(review);
+  } catch (error) {
+    next(error);
+  }
+}
