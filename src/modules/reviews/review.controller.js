@@ -41,9 +41,23 @@ export const removeReview = async (req, res, next) => {
 export const getReview = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { rating, sortBy, orderBy, page, size } = req.query;
 
-    const review = await getProductReviews({ productId: id });
-    res.status(200).json(review);
+    const hasQueryParams = Object.keys(req.query).length > 0;
+    const review = await getProductReviews({
+      productId: id,
+      rating,
+      sortBy,
+      orderBy,
+      page,
+      size,
+    });
+
+    if (!hasQueryParams) {
+      return res.status(200).json(review.data);
+    }
+
+    return res.status(200).json(review);
   } catch (error) {
     next(error);
   }

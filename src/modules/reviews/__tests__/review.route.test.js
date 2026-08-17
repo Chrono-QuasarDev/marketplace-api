@@ -124,6 +124,33 @@ describe('POST /api/reviews', () => {
     expect(res.body.error).toMatch(/purchased/i);
   });
 
+  it('should reject a review when the purchase has not been delivered yet', async () => {
+    const product = await Product.create({
+      sellerId: sellerUser.id,
+      title: 'Pending Purchase Product',
+      description: 'Order exists but is not delivered yet.',
+      price: 90.0,
+      category: 'misc',
+      images: ['pending-purchase.jpg'],
+      availability: false,
+    });
+
+    await Order.create({
+      buyerId: buyerUser.id,
+      productId: product.id,
+      priceAtPurchase: product.price,
+      status: 'pending',
+    });
+
+    const res = await request(app)
+      .post('/api/reviews')
+      .set('Authorization', `Bearer ${buyerToken}`)
+      .send({ productId: product.id, rating: 4, comment: 'Not delivered yet.' });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toMatch(/delivered/i);
+  });
+
   it('should reject a duplicate review for the same product by the same buyer', async () => {
     const { product } = await createProductWithDeliveredOrder();
 
@@ -199,6 +226,41 @@ describe('GET /api/reviews/:id', () => {
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.some((entry) => entry.id === created.body.id)).toBe(true);
+  });
+
+  it('should support rating filtering, sorting, and pagination for reviews', async () => {
+    const { product } = await createProductWithDeliveredOrder();
+
+    await Order.create({
+      buyerId: secondBuyerUser.id,
+      productId: product.id,
+      priceAtPurchase: product.price,
+      status: 'delivered',
+    });
+
+    await request(app)
+      .post('/api/reviews')
+      .set('Authorization', `Bearer ${buyerToken}`)
+      .send({ productId: product.id, rating: 3, comment: 'Average product.' });
+
+    await request(app)
+      .post('/api/reviews')
+      .set('Authorization', `Bearer ${secondBuyerToken}`)
+      .send({ productId: product.id, rating: 5, comment: 'Excellent product.' });
+
+    const res = await request(app)
+      .get(`/api/reviews/${product.id}?rating=5&sortBy=rating&orderBy=desc&page=1&size=10`)
+      .set('Authorization', `Bearer ${buyerToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].rating).toBe(5);
+    expect(res.body.meta).toMatchObject({
+      page: 1,
+      limit: 10,
+      totalItems: 1,
+      totalPages: 1,
+    });
   });
 
   it('should reject an invalid product id', async () => {

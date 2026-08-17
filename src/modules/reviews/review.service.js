@@ -16,7 +16,7 @@ export const createReview = async ({ userId, productId, rating, comment }) => {
     throw new ApiError(400, "Invalid rating. Please provide a rating between 1 and 5.");
   }
 
-  // Check if user has purchased the product
+  // Check if user has purchased the product and the order is actually delivered
   const order = await Order.findOne({
     where: { buyerId: userId, productId },
     include: [{ model: Product }]
@@ -24,6 +24,10 @@ export const createReview = async ({ userId, productId, rating, comment }) => {
 
   if (!order) {
     throw new ApiError(403, "You can only review products you have purchased");
+  }
+
+  if (order.status !== 'delivered') {
+    throw new ApiError(403, "You can only review products after the order has been delivered");
   }
 
   const existingReview = await Review.findOne({
@@ -102,16 +106,47 @@ export const deleteReview = async ({ userId, reviewId, role }) => {
   return true;
 };
 
-export const getProductReviews = async ({ productId }) => {
+export const getProductReviews = async ({ productId, rating, sortBy = 'createdAt', orderBy = 'desc', page = 1, size = 10, }) => {
   // Validate product id
   if (!validateId(productId)) {
     throw new ApiError(400, "Invalid product ID");
   }
 
-  const reviews = await Review.findAll({
-    where: { productId },
+  const allowedSortFields = ['createdAt', 'rating'];
+  const allowedOrder = ['asc', 'desc'];
+
+  const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+  const safeOrderBy = allowedOrder.includes(orderBy) ? orderBy : 'desc';
+  const safePage = Number(page) > 0 ? Number(page) : 1;
+  let safeSize = Number(size) > 0 ? Number(size) : 10;
+  if (safeSize >= 100) safeSize = 100;
+
+  const where = { productId };
+  if (rating !== undefined && rating !== null && rating !== '') {
+    const parsedRating = Number(rating);
+    if (Number.isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+      throw new ApiError(400, 'Invalid rating filter');
+    }
+    where.rating = parsedRating;
+  }
+
+  const offset = (safePage - 1) * safeSize;
+
+  const { count, rows } = await Review.findAndCountAll({
+    where,
     include: [{ model: User, attributes: ['id', 'username'] }],
-    order: [['createdAt', 'DESC']]
+    order: [[safeSortBy, safeOrderBy]],
+    limit: safeSize,
+    offset,
   });
-    return reviews;
+
+  return {
+    data: rows,
+    meta: {
+      page: safePage,
+      limit: safeSize,
+      totalItems: count,
+      totalPages: Math.ceil(count / safeSize),
+    },
+  };
 };
