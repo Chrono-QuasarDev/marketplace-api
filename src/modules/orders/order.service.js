@@ -54,9 +54,6 @@ export const getOrderHistory = async (buyerId) => {
     include: [Product],
     order: [['createdAt', 'DESC']]
   });
-  if (!orders) {
-    throw new ApiError(404, 'No orders found for this buyer');
-  }
   return orders;
 };
 
@@ -82,13 +79,16 @@ export const getOrderByIdService = async (id, userId, userRole) => {
 
 
 export const updateOrderStatus = async (orderId, newStatus, requestingUserId, requestingUserRole) => {
-  if (requestingUserRole !== 'admin' && requestingUserRole !== 'seller' && requestingUserRole !== 'buyer') {
-    throw new ApiError(400, 'Unauthorized to update order status');
-  }
-
-  const order = await Order.findByPk(orderId);
+  const order = await Order.findByPk(orderId, { include: [Product] });
   if (!order) {
     throw new ApiError(404, 'Order not found');
+  }
+  
+  const isSeller = order.Product.sellerId === requestingUserId;
+  const isAdmin = requestingUserRole === 'admin';
+
+  if (!isSeller && !isAdmin) {
+    throw new ApiError(403, 'Unauthorized to update order status');
   }
 
   assertValidTransition(order.status, newStatus);
