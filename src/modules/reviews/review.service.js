@@ -72,3 +72,45 @@ export const updateReview = async ({ userId, reviewId, rating, comment }) => {
   await review.save();
   return review;
 }
+
+export const deleteReview = async ({ userId, reviewId, role }) => {
+  // Validate IDs
+  if (!validateId(reviewId)) {
+    throw new ApiError(400, "Invalid review ID");
+  }
+
+  // Get review from db
+  const review = await Review.findByPk(reviewId);
+
+  // Check if review exists
+  if (!review) {
+    throw new ApiError(404, "Review not found");
+  }
+
+  // Check if user is the owner of the review or an admin
+  const isOwner = review.userId === userId;
+  const isAdmin = role === 'admin';
+
+  if (!isOwner && !isAdmin) {
+    throw new ApiError(403, "You can only delete your own reviews");
+  }
+
+  // Delete the review
+  await review.destroy();
+
+  return true;
+};
+
+export const getProductReviews = async ({ productId }) => {
+  // Validate product id
+  if (!validateId(productId)) {
+    throw new ApiError(400, "Invalid product ID");
+  }
+
+  const reviews = await Review.findAll({
+    where: { productId },
+    include: [{ model: User, attributes: ['id', 'username'] }],
+    order: [['createdAt', 'DESC']]
+  });
+  return reviews;
+};
