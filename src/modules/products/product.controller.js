@@ -1,4 +1,11 @@
-import { createProductInDb, getProductsFromDb, getProductByIdFromDb, updateProductByIdFromDb, deleteProductByIdFromDb } from './product.service.js';
+import { z } from 'zod/v4';
+import { 
+  createProductInDb, 
+  getProductsFromDb, 
+  getProductByIdFromDb, 
+  updateProductByIdFromDb, 
+  deleteProductByIdFromDb 
+} from './product.service.js';
 
 const ALLOWED_SORT_FIELDS = ['createdAt', 'price', 'title'];
 const ALLOWED_ORDER = ['asc', 'desc'];
@@ -6,8 +13,9 @@ const ALLOWED_ORDER = ['asc', 'desc'];
 const createProduct = async (req, res, next) => {
   try {
     const sellerId = req.user.id;
-    const { title, description, price, category, images, availability } = req.body;
-    const product = await createProductInDb({ sellerId, title, description, price, category, images, availability });
+    
+    const product = await createProductInDb({ sellerId, ...req.body });
+
     res.status(201).json(product);
   } catch (error) {
     next(error);

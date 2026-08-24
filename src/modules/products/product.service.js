@@ -1,12 +1,10 @@
 import Products from './products.model.js';
 import { ApiError } from '../../shared/errors/ApiError.js';
-import { sanitizeProductPayload } from '../../shared/validators/product.validator.js';
+import { validateId } from '../../shared/validators/id.validator.js';
 
 const createProductInDb = async (productData) => {
-  const safeData = sanitizeProductPayload(productData, { requireAllFields: true });
-
   const product = await Products.create({
-    ...safeData,
+    ...productData,
     sellerId: productData.sellerId,
   });
 
@@ -24,8 +22,7 @@ const getProductsFromDb = async (params) => {
 };
 
 const getProductByIdFromDb = async (id) => {
-  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!UUID_REGEX.test(id)) {
+  if (!validateId(id)) {
     throw new ApiError(400, 'Invalid product id');
   }
 
@@ -37,8 +34,7 @@ const getProductByIdFromDb = async (id) => {
 };
 
 const updateProductByIdFromDb = async (id, sellerId, productData) => {
-  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!UUID_REGEX.test(id)) {
+  if (!validateId(id)) {
     throw new ApiError(400, 'Invalid product id');
   }
 
@@ -61,8 +57,7 @@ const updateProductByIdFromDb = async (id, sellerId, productData) => {
 };
 
 const deleteProductByIdFromDb = async (id, sellerId) => {
-  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!UUID_REGEX.test(id)) {
+  if (!validateId(id)) {
     throw new ApiError(400, 'Invalid product id');
   }
 

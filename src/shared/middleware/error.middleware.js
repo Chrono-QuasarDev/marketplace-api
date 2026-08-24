@@ -1,4 +1,5 @@
 import { ApiError } from '../errors/ApiError.js';
+import z, { ZodError } from 'zod';
 
 export const errorHandler = async (err, req, res, next) => {
   if (err instanceof ApiError) {
@@ -7,6 +8,13 @@ export const errorHandler = async (err, req, res, next) => {
 
   if (err.name === 'SequelizeUniqueConstraintError') {
     return res.status(409).json({ error: 'Username already taken' });
+  }
+
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: err.issues
+    });
   }
 
   console.error(err);

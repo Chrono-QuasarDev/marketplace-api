@@ -45,10 +45,6 @@ export const purchaseProduct = async (productId, buyerId) => {
 };
 
 export const getOrderHistory = async (buyerId) => {
-  if (!validateId(buyerId)) {
-    throw new ApiError(400, 'Invalid buyer id');
-  }
-
   const orders = await Order.findAll({ 
     where: { buyerId },
     include: [Product],

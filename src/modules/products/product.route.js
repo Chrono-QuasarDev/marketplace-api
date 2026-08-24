@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authenticate } from '../../shared/middleware/auth.middleware.js';
 import { authorization } from '../../shared/middleware/authz.middleware.js';
+import { validate } from "../../shared/middleware/validate.middleware.js";
+import { createProductSchema, updateProductSchema } from "../../shared/validators/zod.validator.js";
 import { 
   createProduct, 
   getProducts, 
@@ -16,8 +18,8 @@ router.get('/', getProducts);
 router.get('/:id', getProductById);
 
 // Protected
-router.post('/', authorization(['seller']), createProduct);
-router.put('/:id', authorization(['seller']), updateProductById);
-router.delete('/:id', authorization(['seller']), deleteProductById);
+router.post('/', authenticate, validate(createProductSchema), createProduct);
+router.put('/:id', authenticate, validate(updateProductSchema), authorization(['seller']), updateProductById);
+router.delete('/:id', authenticate, authorization(['seller']), deleteProductById);
 
 export default router;

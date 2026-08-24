@@ -2,7 +2,7 @@ import { purchaseProduct, getOrderByIdService, getOrderHistory, updateOrderStatu
 
 export const purchase = async (req, res, next) => {
   try {
-    const productId = req.body.productId;
+    const { productId } = req.body;
     const buyerId = req.user.id;
 
     const { order } = await purchaseProduct(productId, buyerId);
