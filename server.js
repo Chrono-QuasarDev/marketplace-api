@@ -1,6 +1,6 @@
 import sequelize from './src/config/db.js';
 import './src/database/associations.js';
-import app from './src/app.js'
+import app from './src/app.js';
 
 const testConnection = async () => {
   try {

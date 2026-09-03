@@ -47,7 +47,7 @@ const updateProductByIdFromDb = async (id, sellerId, productData) => {
     throw new ApiError(403, 'You are not the owner of this product');
   }
 
-  const safeData = sanitizeProductPayload(productData);
+  const safeData = productData;
   if (Object.keys(safeData).length === 0) {
     return product;
   }
