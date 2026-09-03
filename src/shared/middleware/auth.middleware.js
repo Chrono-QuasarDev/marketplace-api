@@ -1,8 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { configDotenv } from "dotenv";
 import { ApiError } from "../errors/ApiError.js";
-
-configDotenv();
 
 export const authenticate = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
