@@ -13,8 +13,8 @@ module.exports = {
       { username: 'buyer3', email: 'buyer3@example.com', password, role: 'buyer' },
       { username: 'buyer4', email: 'buyer4@example.com', password, role: 'buyer' },
       { username: 'buyer5', email: 'buyer5@example.com', password, role: 'buyer' },
-      { username: 'seller1', email: 'seller1@example.com', password, role: 'seller' },
       { username: 'seller2', email: 'seller2@example.com', password, role: 'seller' },
+      { username: 'admin',  email: 'admin@example.com', password, role: 'admin'}
     ].map((user) => ({
       id: randomUUID(),
       ...user,
@@ -31,7 +31,7 @@ module.exports = {
 
   async down(queryInterface) {
     await queryInterface.bulkDelete('Users', {
-      username: ['buyer1', 'buyer2', 'buyer3', 'buyer4', 'buyer5', 'seller1', 'seller2'],
+      username: ['buyer1', 'buyer2', 'buyer3', 'buyer4', 'buyer5', 'seller2', 'admin'],
     }, {});
   },
 };
