@@ -1,4 +1,4 @@
-import z, { email } from "zod";
+import z from "zod";
 
 // POST - Sign up validation schema (auth)
 export const signUpSchema = z.object({
@@ -40,7 +40,7 @@ export const updateProductSchema = z.object({
 
 // POST - Purchase a product (order)
 export const purchaseProductSchema = z.object({
-  productId: z.uuidv4
+  productId: z.uuidv4()
 });
 
 // PATCH - Update an order status (order)
