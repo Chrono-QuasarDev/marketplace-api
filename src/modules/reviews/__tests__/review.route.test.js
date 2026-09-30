@@ -86,12 +86,12 @@ afterAll(async () => {
   await sequelize.close();
 });
 
-describe('POST /api/reviews', () => {
+describe('POST /api/v1/reviews', () => {
   it('should create a review when the buyer has a delivered order for the product', async () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 5, comment: 'Great product, arrived fast.' });
 
@@ -116,9 +116,9 @@ describe('POST /api/reviews', () => {
     });
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
-      .send({ productId: product.id, rating: 4 });
+      .send({ productId: product.id, rating: 4, comment: 'Not purchased.' });
 
     expect(res.statusCode).toBe(403);
     expect(res.body.error).toMatch(/purchased/i);
@@ -143,7 +143,7 @@ describe('POST /api/reviews', () => {
     });
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 4, comment: 'Not delivered yet.' });
 
@@ -155,12 +155,12 @@ describe('POST /api/reviews', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 5, comment: 'First review.' });
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 2, comment: 'Second attempt.' });
 
@@ -172,7 +172,7 @@ describe('POST /api/reviews', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 0 });
 
@@ -183,7 +183,7 @@ describe('POST /api/reviews', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 6 });
 
@@ -192,7 +192,7 @@ describe('POST /api/reviews', () => {
 
   it('should reject an invalid product id', async () => {
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: 'not-a-uuid', rating: 4 });
 
@@ -203,24 +203,24 @@ describe('POST /api/reviews', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const res = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .send({ productId: product.id, rating: 4 });
 
     expect(res.statusCode).toBe(401);
   });
 });
 
-describe('GET /api/reviews/:id', () => {
+describe('GET /api/v1/reviews/:id', () => {
   it('should return all reviews for a product', async () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 4, comment: 'Solid buy.' });
 
     const res = await request(app)
-      .get(`/api/reviews/${product.id}`)
+      .get(`/api/v1/reviews/${product.id}`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -239,17 +239,17 @@ describe('GET /api/reviews/:id', () => {
     });
 
     await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 3, comment: 'Average product.' });
 
     await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${secondBuyerToken}`)
       .send({ productId: product.id, rating: 5, comment: 'Excellent product.' });
 
     const res = await request(app)
-      .get(`/api/reviews/${product.id}?rating=5&sortBy=rating&orderBy=desc&page=1&size=10`)
+      .get(`/api/v1/reviews/${product.id}?rating=5&sortBy=rating&orderBy=desc&page=1&size=10`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -265,24 +265,24 @@ describe('GET /api/reviews/:id', () => {
 
   it('should reject an invalid product id', async () => {
     const res = await request(app)
-      .get('/api/reviews/not-a-uuid')
+      .get('/api/v1/reviews/not-a-uuid')
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(400);
   });
 });
 
-describe('PUT /api/reviews/:id', () => {
+describe('PUT /api/v1/reviews/:id', () => {
   it('should allow the owner to update their review', async () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 3, comment: 'It was okay.' });
 
     const res = await request(app)
-      .put(`/api/reviews/${created.body.id}`)
+      .put(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ rating: 5, comment: 'Actually, it grew on me.' });
 
@@ -295,12 +295,12 @@ describe('PUT /api/reviews/:id', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 4, comment: 'Original comment.' });
 
     const res = await request(app)
-      .put(`/api/reviews/${created.body.id}`)
+      .put(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ comment: 'Updated comment only.' });
 
@@ -313,12 +313,12 @@ describe('PUT /api/reviews/:id', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 3, comment: 'Owned by buyerUser.' });
 
     const res = await request(app)
-      .put(`/api/reviews/${created.body.id}`)
+      .put(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${secondBuyerToken}`)
       .send({ rating: 1, comment: 'Trying to hijack this review.' });
 
@@ -329,12 +329,12 @@ describe('PUT /api/reviews/:id', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 3 });
 
     const res = await request(app)
-      .put(`/api/reviews/${created.body.id}`)
+      .put(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ rating: 7 });
 
@@ -343,7 +343,7 @@ describe('PUT /api/reviews/:id', () => {
 
   it('should return 404 for a valid UUID that does not exist', async () => {
     const res = await request(app)
-      .put('/api/reviews/11111111-1111-4111-8111-111111111111')
+      .put('/api/v1/reviews/11111111-1111-4111-8111-111111111111')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ rating: 4 });
 
@@ -351,17 +351,17 @@ describe('PUT /api/reviews/:id', () => {
   });
 });
 
-describe('DELETE /api/reviews/:id', () => {
+describe('DELETE /api/v1/reviews/:id', () => {
   it('should allow the owner to delete their own review', async () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 3, comment: 'To be deleted by owner.' });
 
     const res = await request(app)
-      .delete(`/api/reviews/${created.body.id}`)
+      .delete(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -374,12 +374,12 @@ describe('DELETE /api/reviews/:id', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 2, comment: 'To be deleted by admin.' });
 
     const res = await request(app)
-      .delete(`/api/reviews/${created.body.id}`)
+      .delete(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -392,12 +392,12 @@ describe('DELETE /api/reviews/:id', () => {
     const { product } = await createProductWithDeliveredOrder();
 
     const created = await request(app)
-      .post('/api/reviews')
+      .post('/api/v1/reviews')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id, rating: 3, comment: 'Should not be deletable by others.' });
 
     const res = await request(app)
-      .delete(`/api/reviews/${created.body.id}`)
+      .delete(`/api/v1/reviews/${created.body.id}`)
       .set('Authorization', `Bearer ${secondBuyerToken}`);
 
     expect(res.statusCode).toBe(403);
@@ -408,7 +408,7 @@ describe('DELETE /api/reviews/:id', () => {
 
   it('should return 404 when deleting a valid UUID that does not exist', async () => {
     const res = await request(app)
-      .delete('/api/reviews/11111111-1111-4111-8111-111111111111')
+      .delete('/api/v1/reviews/11111111-1111-4111-8111-111111111111')
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(404);

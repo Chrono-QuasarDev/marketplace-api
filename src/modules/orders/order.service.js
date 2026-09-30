@@ -44,12 +44,19 @@ export const purchaseProduct = async (productId, buyerId) => {
   return result;
 };
 
-export const getOrderHistory = async (buyerId) => {
-  const orders = await Order.findAll({ 
-    where: { buyerId },
+export const getOrderHistory = async (userId, userRole) => {
+  const query = {
     include: [Product],
     order: [['createdAt', 'DESC']]
-  });
+  };
+
+  if (userRole === 'buyer') {
+    query.where = { buyerId: userId };
+  } else if (userRole === 'seller') {
+    query.include = [{ model: Product, where: { sellerId: userId } }];
+  }
+
+  const orders = await Order.findAll(query);
   return orders;
 };
 

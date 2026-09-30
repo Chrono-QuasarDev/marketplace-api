@@ -8,7 +8,10 @@
   "main": "app.js",
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --detectOpenHandles --forceExit",
-    "start": "node --watch server.js"
+    "start": "node --watch server.js",
+    "migrate": "sequelize db:migrate",
+    "seed": "sequelize db:seed:all",
+    "migrate:undo": "sequelize db:migrate:undo"
   },
   "jest": {
     "testEnvironment": "node"
@@ -32,5 +35,9 @@
     "jest": "^30.4.2",
     "sequelize-cli": "^6.6.5",
     "supertest": "^7.2.2"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true,
+    "unrs-resolver@1.12.2": true
   }
 }

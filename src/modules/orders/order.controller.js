@@ -16,8 +16,9 @@ export const purchase = async (req, res, next) => {
 export const getOrders = async (req, res, next) => {
   try {
     const { id } = req.user;
+    const { role } = req.user;
 
-    const orders = await getOrderHistory(id);
+    const orders = await getOrderHistory(id, role);
     res.status(200).json({ orders });
   } catch (error) {
     next(error);

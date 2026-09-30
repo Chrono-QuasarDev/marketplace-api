@@ -46,28 +46,28 @@ afterAll(async () => {
 describe('Auth route bad-input and attack cases', () => {
   it('should reject signup when required fields are missing', async () => {
     const res = await request(app)
-      .post('/api/auth/signup')
+      .post('/api/v1/auth/signup')
       .send({ username: 'newuser', email: '' });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/all fields are required/i);
+    expect(res.body.error).toBe('Validation failed');
   });
 
   it('should reject login attempts with SQL-injection-style email payloads', async () => {
     const res = await request(app)
-      .post('/api/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email: "user@example.com' OR '1'='1",
         password: 'password123',
       });
 
-    expect(res.statusCode).toBe(401);
-    expect(res.body.error).toMatch(/invalid credentials/i);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('Validation failed');
   });
 
   it('should reject login on invalid credentials', async () => {
     const res = await request(app)
-      .post('/api/auth/login')
+      .post('/api/v1/auth/login')
       .send({
         email: 'user@example.com',
         password: 'wrong-password',

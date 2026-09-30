@@ -62,7 +62,7 @@ afterAll(async () => {
   await sequelize.close();
 });
 
-describe('POST /api/orders/purchase', () => {
+describe('POST /api/v1/orders/purchase', () => {
   it('should create an order for an available product and mark it unavailable', async () => {
     const product = await Product.create({
       sellerId: sellerUser.id,
@@ -75,7 +75,7 @@ describe('POST /api/orders/purchase', () => {
     });
 
     const res = await request(app)
-      .post('/api/orders/purchase')
+      .post('/api/v1/orders/purchase')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id });
 
@@ -103,7 +103,7 @@ describe('POST /api/orders/purchase', () => {
     });
 
     const res = await request(app)
-      .post('/api/orders/purchase')
+      .post('/api/v1/orders/purchase')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ productId: product.id });
 
@@ -123,7 +123,7 @@ describe('POST /api/orders/purchase', () => {
     });
 
     const res = await request(app)
-      .post('/api/orders/purchase')
+      .post('/api/v1/orders/purchase')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({ productId: product.id });
 
@@ -132,7 +132,7 @@ describe('POST /api/orders/purchase', () => {
   });
 });
 
-describe('GET /api/orders', () => {
+describe('GET /api/v1/orders', () => {
   it('should return all orders for the authenticated buyer', async () => {
     const product = await Product.create({
       sellerId: sellerUser.id,
@@ -152,16 +152,42 @@ describe('GET /api/orders', () => {
     });
 
     const res = await request(app)
-      .get('/api/orders')
+      .get('/api/v1/orders')
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.orders)).toBe(true);
     expect(res.body.orders.some((entry) => entry.id === order.id)).toBe(true);
   });
+
+  it('should return orders for products owned by the authenticated seller', async () => {
+    const product = await Product.create({
+      sellerId: sellerUser.id,
+      title: 'Incoming Seller Order',
+      description: 'Used to test seller order retrieval.',
+      price: 180.0,
+      category: 'home',
+      images: ['incoming-order.jpg'],
+      availability: false,
+    });
+
+    const order = await Order.create({
+      buyerId: buyerUser.id,
+      productId: product.id,
+      priceAtPurchase: 180.0,
+      status: 'pending',
+    });
+
+    const res = await request(app)
+      .get('/api/v1/orders')
+      .set('Authorization', `Bearer ${sellerToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.orders.some((entry) => entry.id === order.id)).toBe(true);
+  });
 });
 
-describe('GET /api/orders/:id', () => {
+describe('GET /api/v1/orders/:id', () => {
   it('should return an order for the buyer who owns it', async () => {
     const product = await Product.create({
       sellerId: sellerUser.id,
@@ -181,7 +207,7 @@ describe('GET /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .get(`/api/orders/${order.id}`)
+      .get(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -208,7 +234,7 @@ describe('GET /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .get(`/api/orders/${order.id}`)
+      .get(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${secondBuyerToken}`);
 
     expect(res.statusCode).toBe(403);
@@ -234,7 +260,7 @@ describe('GET /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .get(`/api/orders/${order.id}`)
+      .get(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${sellerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -243,7 +269,7 @@ describe('GET /api/orders/:id', () => {
   });
 });
 
-describe('PATCH /api/orders/:id', () => {
+describe('PATCH /api/v1/orders/:id', () => {
   it('should allow a seller to update order status to processing', async () => {
     const product = await Product.create({
       sellerId: sellerUser.id,
@@ -263,7 +289,7 @@ describe('PATCH /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .patch(`/api/orders/${order.id}`)
+      .patch(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({ status: 'processing' });
 
@@ -290,7 +316,7 @@ describe('PATCH /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .patch(`/api/orders/${order.id}`)
+      .patch(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ status: 'delivered' });
 
@@ -317,7 +343,7 @@ describe('PATCH /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .patch(`/api/orders/${order.id}`)
+      .patch(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ status: 'cancelled' });
 
@@ -347,7 +373,7 @@ describe('PATCH /api/orders/:id', () => {
     });
 
     const res = await request(app)
-      .patch(`/api/orders/${order.id}`)
+      .patch(`/api/v1/orders/${order.id}`)
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ status: 'processing' });
 
