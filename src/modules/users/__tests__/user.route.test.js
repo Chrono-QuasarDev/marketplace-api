@@ -49,10 +49,10 @@ afterAll(async () => {
   await sequelize.close();
 });
 
-describe('PUT /api/users/profile', () => {
+describe('PUT /api/v1/users/profile', () => {
   it("should update the username successfully", async () => {
     const res = await request(app)
-      .put('/api/users/profile')
+      .put('/api/v1/users/profile')
       .set("Authorization", `Bearer ${token}`)
       .send({ username: "updateduser" });
 
@@ -63,17 +63,18 @@ describe('PUT /api/users/profile', () => {
 
   it("should return 400 if username is missing", async () => {
     const res = await request(app)
-      .put('/api/users/profile')
+      .put('/api/v1/users/profile')
       .set("Authorization", `Bearer ${token}`)
       .send({});
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/username is required/i);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details[0].path).toContain('username');
   });
 
   it("should return 401 if no token is provided", async () => {
     const res = await request(app)
-      .put('/api/users/profile')
+      .put('/api/v1/users/profile')
       .send({ username: "noauthuser" });
 
     expect(res.statusCode).toBe(401);
@@ -81,7 +82,7 @@ describe('PUT /api/users/profile', () => {
 
   it('should return 401 for an invalid token', async () => {
     const res = await request(app)
-      .put('/api/users/profile')
+      .put('/api/v1/users/profile')
       .set('Authorization', 'Bearer malformed.token.value')
       .send({ username: 'hacker' });
 
@@ -98,7 +99,7 @@ describe('PUT /api/users/profile', () => {
     });
 
     const res = await request(app)
-      .put('/api/users/profile')
+      .put('/api/v1/users/profile')
       .set("Authorization", `Bearer ${token}`)
       .send({ username: "takenname" });
 

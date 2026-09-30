@@ -13,7 +13,7 @@ Authentication:
 
 ## Authentication
 
-### POST /api/auth/signup
+### POST /api/v1/auth/signup
 Creates a new user account.
 
 Request body:
@@ -39,7 +39,7 @@ Success response (201):
 }
 ```
 
-### POST /api/auth/login
+### POST /api/v1/auth/login
 Logs in an existing user and returns a token.
 
 Request body:
@@ -69,7 +69,7 @@ Success response (200):
 
 ## Users
 
-### GET /api/users/profile
+### GET /api/v1/users/profile
 Returns the authenticated user profile.
 
 Authentication required: yes
@@ -85,7 +85,7 @@ Success response (200):
 }
 ```
 
-### PUT /api/users/profile
+### PUT /api/v1/users/profile
 Updates the authenticated user's username.
 
 Authentication required: yes
@@ -115,7 +115,7 @@ Success response (200):
 
 ## Products
 
-### POST /api/products
+### POST /api/v1/products
 Creates a new product listing.
 
 Authentication required: yes
@@ -130,7 +130,7 @@ Request body:
   "description": "Good condition mountain bike",
   "price": 250,
   "category": "vehicles",
-  "images": ["bike-1.jpg", "bike-2.jpg"],
+  "images": ["https://example.com/bike-1.jpg", "https://example.com/bike-2.jpg"],
   "availability": true
 }
 ```
@@ -152,7 +152,7 @@ Success response (201):
 }
 ```
 
-### GET /api/products
+### GET /api/v1/products
 Lists products with pagination, sorting, and default ordering.
 
 Authentication required: yes
@@ -169,7 +169,7 @@ Query parameters:
 Example:
 
 ```http
-GET /api/products?page=1&size=10&sortBy=price&orderBy=desc
+GET /api/v1/products?page=1&size=10&sortBy=price&orderBy=desc
 ```
 
 Success response (200):
@@ -197,7 +197,7 @@ Success response (200):
 }
 ```
 
-### GET /api/products/:id
+### GET /api/v1/products/:id
 Gets a single product by id.
 
 Authentication required: yes for route access in this app
@@ -217,7 +217,7 @@ Success response (200):
 }
 ```
 
-### PUT /api/products/:id
+### PUT /api/v1/products/:id
 Updates a product.
 
 Authentication required: yes
@@ -250,7 +250,7 @@ Success response (200):
 }
 ```
 
-### DELETE /api/products/:id
+### DELETE /api/v1/products/:id
 Deletes a product.
 
 Authentication required: yes
@@ -269,7 +269,7 @@ Success response (200):
 
 ## Orders
 
-### POST /api/orders/purchase
+### POST /api/v1/orders/purchase
 Creates a new purchase order for a product.
 
 Authentication required: yes
@@ -306,7 +306,7 @@ Notes:
 - The product must be available.
 - Product availability is set to false when purchased.
 
-### GET /api/orders
+### GET /api/v1/orders
 Gets the authenticated user's order history.
 
 Authentication required: yes
@@ -337,7 +337,7 @@ Success response (200):
 }
 ```
 
-### GET /api/orders/:id
+### GET /api/v1/orders/:id
 Gets a single order by id.
 
 Authentication required: yes
@@ -367,7 +367,7 @@ Success response (200):
 }
 ```
 
-### PATCH /api/orders/:id
+### PATCH /api/v1/orders/:id
 Updates an order status.
 
 Authentication required: yes
@@ -408,7 +408,7 @@ Success response (200):
 
 ## Reviews
 
-### POST /api/reviews
+### POST /api/v1/reviews
 Creates a product review for a delivered order.
 
 Authentication required: yes
@@ -446,7 +446,7 @@ Success response (201):
 }
 ```
 
-### GET /api/reviews/:id
+### GET /api/v1/reviews/:id
 Gets reviews for a product.
 
 Authentication required: yes
@@ -464,8 +464,8 @@ Query parameters:
 Examples:
 
 ```http
-GET /api/reviews/8d0acbfa-5f7d-4cf2-8e6a-987f7f1b2d1a
-GET /api/reviews/8d0acbfa-5f7d-4cf2-8e6a-987f7f1b2d1a?rating=5&sortBy=rating&orderBy=desc&page=1&size=10
+GET /api/v1/reviews/8d0acbfa-5f7d-4cf2-8e6a-987f7f1b2d1a
+GET /api/v1/reviews/8d0acbfa-5f7d-4cf2-8e6a-987f7f1b2d1a?rating=5&sortBy=rating&orderBy=desc&page=1&size=10
 ```
 
 Without query parameters, the response is a plain array:
@@ -514,7 +514,7 @@ With query parameters, the response shape is:
 }
 ```
 
-### PUT /api/reviews/:id
+### PUT /api/v1/reviews/:id
 Updates a review.
 
 Authentication required: yes
@@ -542,7 +542,7 @@ Success response (200):
 }
 ```
 
-### DELETE /api/reviews/:id
+### DELETE /api/v1/reviews/:id
 Deletes a review.
 
 Authentication required: yes

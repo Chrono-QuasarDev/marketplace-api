@@ -116,7 +116,7 @@ afterAll(async () => {
   await sequelize.close();
 });
 
-describe('POST /api/products', () => {
+describe('POST /api/v1/products', () => {
   it('should create a product when the user is a seller', async () => {
     const payload = {
       title: 'Gaming Laptop',
@@ -128,7 +128,7 @@ describe('POST /api/products', () => {
     };
 
     const res = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
@@ -154,7 +154,7 @@ describe('POST /api/products', () => {
     };
 
     const res = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${buyerToken}`)
       .send(payload);
 
@@ -168,12 +168,15 @@ describe('POST /api/products', () => {
     };
 
     const res = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/missing required fields/i);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details.map(({ path }) => path[0])).toEqual(
+      expect.arrayContaining(['description', 'category', 'images', 'availability'])
+    );
   });
 
   it('should return 400 when payload fields are invalid', async () => {
@@ -187,12 +190,15 @@ describe('POST /api/products', () => {
     };
 
     const res = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/price must be a positive number|images must be a non-empty array|availability must be a boolean value/i);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details.map(({ path }) => path[0])).toEqual(
+      expect.arrayContaining(['price', 'images', 'availability'])
+    );
   });
 
   it('should return 401 for an invalid token', async () => {
@@ -206,7 +212,7 @@ describe('POST /api/products', () => {
     };
 
     const res = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', 'Bearer bad.token.value')
       .send(payload);
 
@@ -225,7 +231,7 @@ describe('POST /api/products', () => {
     };
 
     const res = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
@@ -244,7 +250,7 @@ describe('POST /api/products', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
@@ -252,7 +258,7 @@ describe('POST /api/products', () => {
     detailProductId = createRes.body.id;
 
     const res = await request(app)
-      .get(`/api/products/${detailProductId}`)
+      .get(`/api/v1/products/${detailProductId}`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -262,7 +268,7 @@ describe('POST /api/products', () => {
   });
 });
 
-describe('PUT /api/products/:id', () => {
+describe('PUT /api/v1/products/:id', () => {
   it('should update a product when the seller owns it', async () => {
     const payload = {
       title: 'Update Owner Product',
@@ -274,14 +280,14 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({
         title: 'Updated Laptop',
@@ -307,14 +313,14 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${otherSellerToken}`)
       .send({ title: 'Hacked title' });
 
@@ -326,7 +332,7 @@ describe('PUT /api/products/:id', () => {
     const randomUuid = '22222222-2222-4222-8222-222222222222';
 
     const res = await request(app)
-      .put(`/api/products/${randomUuid}`)
+      .put(`/api/v1/products/${randomUuid}`)
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({ title: 'Ghost update' });
 
@@ -336,12 +342,12 @@ describe('PUT /api/products/:id', () => {
 
   it('should return 400 for invalid product id format', async () => {
     const res = await request(app)
-      .put('/api/products/123')
+      .put('/api/v1/products/123')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({ title: 'bad id' });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/invalid product id/i);
+    expect(res.body.error).toMatch(/invalid id/i);
   });
 
   it('should require auth token before updating a product', async () => {
@@ -355,14 +361,14 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .send({ title: 'No token' });
 
     expect(res.statusCode).toBe(401);
@@ -380,14 +386,14 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${buyerToken}`)
       .send({ title: 'Buyer update' });
 
@@ -406,7 +412,7 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
@@ -415,7 +421,7 @@ describe('PUT /api/products/:id', () => {
     const sellerIdBefore = createRes.body.sellerId;
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({
         id: '33333333-3333-4333-8333-333333333333',
@@ -430,10 +436,10 @@ describe('PUT /api/products/:id', () => {
   });
 
   it.each([
-    ['negative price', { price: -50 }, /price must be a positive number/i],
-    ['non-boolean availability', { availability: 'yes' }, /availability must be a boolean value/i],
-    ['empty images array', { images: [] }, /images must be a non-empty array/i],
-  ])('should reject invalid update value for %s', async (_label, updateBody, expectedError) => {
+    ['negative price', { price: -50 }, 'price'],
+    ['non-boolean availability', { availability: 'yes' }, 'availability'],
+    ['empty images array', { images: [] }, 'images'],
+  ])('should reject invalid update value for %s', async (_label, updateBody, expectedField) => {
     const payload = {
       title: 'Invalid Update Value Product',
       description: 'This product should fail validation on update.',
@@ -444,19 +450,20 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(updateBody);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(expectedError);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details.map(({ path }) => path[0])).toContain(expectedField);
   });
 
   it('should allow partial updates and only change the provided field', async () => {
@@ -470,14 +477,14 @@ describe('PUT /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .put(`/api/products/${createRes.body.id}`)
+      .put(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`)
       .send({ price: 199.99 });
 
@@ -491,7 +498,7 @@ describe('PUT /api/products/:id', () => {
   });
 });
 
-describe('DELETE /api/products/:id', () => {
+describe('DELETE /api/v1/products/:id', () => {
   it('should delete a product when the seller owns it', async () => {
     const payload = {
       title: 'Delete Owner Product',
@@ -503,14 +510,14 @@ describe('DELETE /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .delete(`/api/products/${createRes.body.id}`)
+      .delete(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`);
 
     expect(res.statusCode).toBe(200);
@@ -528,14 +535,14 @@ describe('DELETE /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .delete(`/api/products/${createRes.body.id}`)
+      .delete(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${otherSellerToken}`);
 
     expect(res.statusCode).toBe(403);
@@ -546,7 +553,7 @@ describe('DELETE /api/products/:id', () => {
     const randomUuid = '11111111-1111-4111-8111-111111111111';
 
     const res = await request(app)
-      .delete(`/api/products/${randomUuid}`)
+      .delete(`/api/v1/products/${randomUuid}`)
       .set('Authorization', `Bearer ${sellerToken}`);
 
     expect(res.statusCode).toBe(404);
@@ -555,11 +562,11 @@ describe('DELETE /api/products/:id', () => {
 
   it('should return 400 for invalid product id format', async () => {
     const res = await request(app)
-      .delete('/api/products/123')
+      .delete('/api/v1/products/123')
       .set('Authorization', `Bearer ${sellerToken}`);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/invalid product id/i);
+    expect(res.body.error).toMatch(/invalid id/i);
   });
 
   it('should require auth token before deleting a product', async () => {
@@ -573,14 +580,14 @@ describe('DELETE /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .delete(`/api/products/${createRes.body.id}`);
+      .delete(`/api/v1/products/${createRes.body.id}`);
 
     expect(res.statusCode).toBe(401);
     expect(res.body.error).toMatch(/token|unauthorized|access denied/i);
@@ -597,14 +604,14 @@ describe('DELETE /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const res = await request(app)
-      .delete(`/api/products/${createRes.body.id}`)
+      .delete(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
     expect(res.statusCode).toBe(403);
@@ -622,20 +629,20 @@ describe('DELETE /api/products/:id', () => {
     };
 
     const createRes = await request(app)
-      .post('/api/products')
+      .post('/api/v1/products')
       .set('Authorization', `Bearer ${sellerToken}`)
       .send(payload);
 
     expect(createRes.statusCode).toBe(201);
 
     const firstDelete = await request(app)
-      .delete(`/api/products/${createRes.body.id}`)
+      .delete(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`);
 
     expect(firstDelete.statusCode).toBe(200);
 
     const secondDelete = await request(app)
-      .delete(`/api/products/${createRes.body.id}`)
+      .delete(`/api/v1/products/${createRes.body.id}`)
       .set('Authorization', `Bearer ${sellerToken}`);
 
     expect(secondDelete.statusCode).toBe(404);

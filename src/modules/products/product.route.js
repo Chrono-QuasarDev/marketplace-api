@@ -18,7 +18,7 @@ router.get('/', getProducts);
 router.get('/:id', getProductById);
 
 // Protected
-router.post('/', authenticate, validate(createProductSchema), createProduct);
+router.post('/', authenticate, authorization(['seller']), validate(createProductSchema), createProduct);
 router.put('/:id', authenticate, validate(updateProductSchema), authorization(['seller']), updateProductById);
 router.delete('/:id', authenticate, authorization(['seller']), deleteProductById);
 
